@@ -4,76 +4,72 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.netology.nmedia.dto.Attachment
-import ru.netology.nmedia.dto.Coordinates
+import ru.netology.nmedia.dto.Event
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.Type
 
-@Entity (primaryKeys = ["id"])
-data class PostEntity(
+@Entity
+data class EventEntity(
+    @PrimaryKey(autoGenerate = true)
     val isNew: Boolean = true,
     val id: Long,
     val authorId: Long,
     val author: String,
     val authorAvatar: String?,
     val content: String,
+    val datetime: String,
     val published: String,
-    val likedByMe: Boolean,
     val ownedByMe: Boolean = false,
-    val mentionedByMe: Boolean = false,
+    val likedByMe: Boolean,
     @Embedded
-    val attachment: Attachment?,
-    @Embedded
-    val coords: Coordinates?,
-    ) {
-        fun toDto() =
-            Post(id,
+    val attachment: Attachment?
+) {
+    fun toDto() =
+        Event(id,
             authorId,
             author,
             authorAvatar,
             content,
+            datetime,
             published,
-            likedByMe,
             ownedByMe,
-            mentionedByMe,
-            attachment,
-            coords,
-            null
-            )
+            likedByMe,
+            attachment)
 
     companion object {
-        fun fromDto(dto: Post) =
-            PostEntity(
+        fun fromDto(dto: Event) =
+            EventEntity(
                 isNew = true,
                 id = dto.id,
                 authorId = dto.authorId,
                 author = dto.author,
                 authorAvatar = dto.authorAvatar,
                 content = dto.content,
+                datetime = dto.datetime,
                 published = dto.published,
+                ownedByMe= dto.ownedByMe,
                 likedByMe = dto.likedByMe,
-                ownedByMe = dto.ownedByMe,
-                mentionedByMe = dto.mentionedMe,
                 attachment = dto.attachment,
-                coords = dto.coords,
+
             )
 
-        fun fromDtoInitial(dto: Post) =
-            PostEntity(
+        fun fromDtoInitial(dto: Event) =
+            EventEntity(
                 isNew = false,
                 id = dto.id,
-                authorId = dto.authorId,
                 author = dto.author,
                 authorAvatar = dto.authorAvatar,
+                authorId = dto.authorId,
                 content = dto.content,
+                datetime = dto.datetime,
                 published = dto.published,
+                ownedByMe= dto.ownedByMe,
                 likedByMe = dto.likedByMe,
-                ownedByMe = dto.ownedByMe,
-                mentionedByMe = dto.mentionedMe,
                 attachment = dto.attachment,
-                coords = dto.coords,
             )
     }
 }
 
-fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto)
-fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)
-fun List<Post>.toEntityInitial(): List<PostEntity> = map(PostEntity::fromDtoInitial)
+fun List<EventEntity>.toDto(): List<Event> = map(EventEntity::toDto)
+fun List<Event>.toEntity(): List<EventEntity> = map(EventEntity::fromDto)
+fun List<Event>.toEntityInitial(): List<EventEntity> = map(EventEntity::fromDtoInitial)

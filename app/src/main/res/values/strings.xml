@@ -13,9 +13,16 @@
     <string name="chooser_share_post">Share post</string>
     <string name="add_post">Add post</string>
     <string name="retry_loading">Retry</string>
+    <string name="get_posts">Posts</string>
+    <string name="get_events">Events</string>
+    <string name="get_jobs">Jobs</string>
+    <string name="get_wall">Wall</string>
     <string name="empty_posts">There are no posts.\nIf you create a new post, it will appear here</string>
+    <string name="empty_events">There are no events.\nIf you create a new event, it will appear here</string>
     <string name="error_loading">Error loading data</string>
     <string name="error_authenticating">Authentication Error</string>
+    <string name="error_registering">Registration Error</string>
+    <string name="error_password_confirmation">Passwords Do Not Match</string>
     <string name="save">Save</string>
     <string name="google_play_unavailable">Google Api Unavailable</string>
     <string name="notification_user_liked">User %1$s liked %2$s\'s post</string>
@@ -29,9 +36,10 @@
     <string name="singnout">Sign Out</string>
     <string name="signin">Sign In</string>
     <string name="signup">Sign Up</string>
-    <string name="enter">Enter</string>
+    <string name="register">Register</string>
     <string name="login">Login</string>
     <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
     <string name="logout">Logout</string>
     <string name="auth_dialog_question">Are you sure you want to log out?</string>
     <string name="login_hint">Login hint</string>
@@ -39,5 +47,10 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="enter_password_here">Enter password here</string>
+    <string name="enter_password_confirmation">Enter password confirmation here</string>
     <string name="enter_login_here">Enter login here</string>
+    <string name="enter_name_here">Enter name here</string>
+    <string name="name">Name</string>
+    <string name="authenticate">Authenticate</string>
+    <string name="android_resource">android.resource://ru.netology.nmedia/</string>
 </resources>

@@ -2,17 +2,18 @@ package ru.netology.nmedia.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import androidx.navigation.findNavController
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.netology.nmedia.R
-import ru.netology.nmedia.ui.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.ui.EditPostFragment.Companion.ARG_EDIT_POST_ID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -29,6 +30,14 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
         super.onCreate(savedInstanceState)
 
+        findViewById<Button>(R.id.posts).setOnClickListener{
+            findNavController(R.id.nav_host_fragment).navigate(R.id.feedFragment)
+        }
+
+        findViewById<Button>(R.id.events).setOnClickListener{
+            findNavController(R.id.nav_host_fragment).navigate(R.id.eventFeedFragment)
+        }
+
         intent?.let {
             if (it.action != Intent.ACTION_SEND) {
                 return@let
@@ -42,9 +51,9 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             intent.removeExtra(Intent.EXTRA_TEXT)
             findNavController(R.id.nav_host_fragment)
                 .navigate(
-                    R.id.action_feedFragment_to_newPostFragment,
+                    R.id.action_feedFragment_to_editPostFragment,
                     Bundle().apply {
-                        textArg = text
+                        ARG_EDIT_POST_ID = text
                     }
                 )
         }

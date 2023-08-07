@@ -1,6 +1,5 @@
 package ru.netology.nmedia.error
 
-import android.app.AuthenticationRequiredException
 import android.database.SQLException
 import java.io.IOException
 

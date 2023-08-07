@@ -14,7 +14,7 @@
             android:id="@+id/emptyText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/empty_posts"
+            android:text="@string/empty_events"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -32,7 +32,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swiperefresh"
+            android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -66,7 +66,9 @@
         android:text="@string/new_post"
         android:layout_gravity="center_horizontal"
         android:visibility="invisible"
-        app:shapeAppearanceOverlay="@style/buttomShape"
-        />
+        app:shapeAppearanceOverlay="@style/buttomShape" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
 

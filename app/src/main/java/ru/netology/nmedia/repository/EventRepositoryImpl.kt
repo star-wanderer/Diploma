@@ -8,12 +8,13 @@ import kotlinx.coroutines.flow.*
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.*
-import ru.netology.nmedia.dao.PostDao
-import ru.netology.nmedia.dao.PostRemoteKeyDao
-import ru.netology.nmedia.dao.PostUserDao
+import ru.netology.nmedia.dao.EventDao
+import ru.netology.nmedia.dao.EventRemoteKeyDao
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.*
-import ru.netology.nmedia.entity.*
+import ru.netology.nmedia.entity.EventEntity
+import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.entity.toEntityInitial
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.NetworkError
@@ -25,29 +26,42 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PostRepositoryImpl @Inject constructor(
+class EventRepositoryImpl @Inject constructor(
     val db: AppDb,
-    private val postDao: PostDao,
-    private val userDao: PostUserDao,
-    val postRemoteKeyDao: PostRemoteKeyDao,
+    private val dao: EventDao,
+    val eventRemoteKeyDao: EventRemoteKeyDao,
     private val apiService: ApiService,
-) : PostRepository {
+) : EventRepository {
 
-    private val pageSize = 3
+    private val pageSize = 5
 
     @OptIn(ExperimentalPagingApi::class)
     override val data: Flow<PagingData<FeedItem>> = Pager(
         config = PagingConfig(pageSize),
-        remoteMediator = PostRemoteMediator(apiService,db,postDao,userDao,postRemoteKeyDao),
-        pagingSourceFactory = postDao::pagingSource,
+        remoteMediator = EventRemoteMediator(apiService,db,dao,eventRemoteKeyDao),
+        pagingSourceFactory = dao::pagingSource,
     ).flow.map { pagingData->
-        pagingData.map(PostEntity::toDto).map { post ->
-            val myMap = mutableMapOf<String,UserPreview>()
-            userDao.getById(post.id).forEach{ postUser ->
-                myMap[postUser.userId] = UserPreview(postUser.name,postUser.avatar)
-            }
-            post.copy(users = myMap)
-        }
+        pagingData.map(EventEntity::toDto)
+//            .insertSeparators(
+//            generator = { before , after ->
+//                val beforeTimeDiff = System.currentTimeMillis()/1000 - before?.published?.toLong()!!
+//                val afterTimeDiff = System.currentTimeMillis()/1000 - after?.published?.toLong()!!
+//                if ((afterTimeDiff in 1..86399998) && (beforeTimeDiff in 86399999 ..172800000))
+//                    TextSeparator(
+//                        Random.nextLong(),
+//                        "TODAY")
+//                if ((afterTimeDiff in 86399999 ..172800000) && (beforeTimeDiff >= 172800000))
+//                    TextSeparator(
+//                        Random.nextLong(),
+//                        "YESTERDAY")
+//                if   (afterTimeDiff >= 172800001)
+//                    TextSeparator(
+//                    Random.nextLong(),
+//                    "LAST WEEK"
+//                    )
+//                else null
+//            }
+//        )
     }
 
     private val _authData = MutableLiveData<AuthModel>()
@@ -56,18 +70,16 @@ class PostRepositoryImpl @Inject constructor(
 
     override suspend fun getInitial() {
         try {
-            val response = apiService.getLatest(pageSize)
+            val response = apiService.getLatestEvents(pageSize)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            if (postDao.isEmpty()) {
-                postDao.insert(body.toEntityInitial())
-
+            if (dao.isEmpty()) {
+                dao.insert(body.toEntityInitial())
             } else {
-                postDao.insert(body.toEntity())
+                dao.insert(body.toEntity())
             }
-            userDao.insert(body.toUserEntity())
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -75,29 +87,14 @@ class PostRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun save(post: Post) {
-        try {
-            val response = apiService.save(post)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(PostEntity.fromDto(body))
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw UnknownError
-        }
-    }
-
-    override suspend fun saveWithAttachment(file: File, post: Post) {
+    override suspend fun saveWithAttachment(file: File, event: Event) {
         try {
             val media = upload(file)
-            val response = apiService.save(
-                post.copy(
+            val response = apiService.saveEvents(
+                event.copy(
                     attachment = Attachment(
                         url = media.url,
-                        type = AttachmentType.IMAGE
+                        AttachmentType.IMAGE
                     )
                 )
             )
@@ -105,7 +102,7 @@ class PostRepositoryImpl @Inject constructor(
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(PostEntity.fromDto(body))
+            dao.insert(EventEntity.fromDto(body))
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -120,30 +117,42 @@ class PostRepositoryImpl @Inject constructor(
                 file.name,
                 file.asRequestBody()
             )
-        ).let { requireNotNull(it.body()) }
+        )
+            .let { requireNotNull(it.body()) }
     }
 
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(10_000L)
-            val response = apiService.getNewer(id + postDao.getIsNewCount())
+            val response = apiService.getNewerEvents(id + dao.getIsNewCount())
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity())
-            emit(postDao.getIsNewCount())
+            dao.insert(body.toEntity())
+            emit(dao.getIsNewCount())
         }
     }
         .catch { e -> throw AppError.from(e) }
         .flowOn(Dispatchers.Default)
 
-    override suspend fun update() {
-        postDao.update()
+    override suspend fun save(event: Event) {
+        try {
+            val response = apiService.saveEvents(event)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            dao.insert(EventEntity.fromDto(body))
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
-    override suspend fun getById(id: Long) : Post {
-        return postDao.getById(id).let(PostEntity::toDto)
+    override suspend fun update() {
+        dao.update()
     }
 
     override suspend fun removeById(id: Long) {
@@ -152,7 +161,7 @@ class PostRepositoryImpl @Inject constructor(
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-            postDao.removeById(id)
+            dao.removeById(id)
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -161,29 +170,7 @@ class PostRepositoryImpl @Inject constructor(
     }
 
     override suspend fun likeById(id: Long) {
-        try {
-            val response = apiService.likeById(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw UnknownError
-        }
+        TODO("Not yet implemented")
     }
 
-    override suspend fun disLikeById(id: Long) {
-        try {
-            val response = apiService.dislikeById(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw UnknownError
-        }
-    }
 }
-

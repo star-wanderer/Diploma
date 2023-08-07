@@ -16,7 +16,7 @@ import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.netology.nmedia.R
-import ru.netology.nmedia.databinding.FragmentNewPostBinding
+import ru.netology.nmedia.databinding.FragmentEditPostBinding
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.util.StringArg
@@ -24,10 +24,10 @@ import ru.netology.nmedia.viewmodel.PostViewModel
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class NewPostFragment : Fragment() {
+class EditPostFragment : Fragment() {
 
     companion object {
-        var Bundle.textArg: String? by StringArg
+        var Bundle.ARG_EDIT_POST_ID: String? by StringArg
     }
 
     private val viewModel: PostViewModel by activityViewModels()
@@ -37,7 +37,7 @@ class NewPostFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentNewPostBinding.inflate(
+        val binding = FragmentEditPostBinding.inflate(
             inflater,
             container,
             false
@@ -77,7 +77,7 @@ class NewPostFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.save -> {
-                        viewModel.changeContent(binding.edit.text.toString())
+                        viewModel.changeContent(binding.content.text.toString())
                         viewModel.save()
                         AndroidUtils.hideKeyboard(requireView())
                         true
@@ -104,9 +104,17 @@ class NewPostFragment : Fragment() {
                 .createIntent { }
         }
 
-        arguments?.textArg
-            ?.let(binding.edit::setText)
 
+        arguments?.let{ args ->
+            if (args.ARG_EDIT_POST_ID?.isNotBlank() == true){
+                viewModel.getById(args.ARG_EDIT_POST_ID.toString().toLong())
+            }
+        }
+
+        viewModel.activeData.observe(viewLifecycleOwner){ activePost ->
+            binding.content.setText(activePost.content)
+            binding.content.requestFocus()
+        }
 
         binding.remove.setOnClickListener {
             viewModel.changePhoto(null)
@@ -120,9 +128,16 @@ class NewPostFragment : Fragment() {
             binding.photoPreviewContainer.isVisible = true
             binding.photoPreview.setImageURI(photoState.uri)
         }
+
         viewModel.postCreated.observe(viewLifecycleOwner) {
             findNavController().navigateUp()
         }
+
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.clear()
     }
 }

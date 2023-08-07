@@ -8,7 +8,7 @@ import ru.netology.nmedia.auth.AppAuth
 import javax.inject.Inject
 
 @HiltViewModel
-class AppAuthModel @Inject constructor(
+class AppAuthViewModel @Inject constructor(
     private val appAuth: AppAuth
 ) : ViewModel() {
     val authLiveData = appAuth

@@ -68,13 +68,13 @@ class AppAuth @Inject constructor(
         prefs.edit {
             putLong(ID_KEY, user.id)
             putString(TOKEN_KEY, user.token)
-        }
+        }.apply {  }
         sendPushToken()
     }
 
     fun removeUser() {
         _authStateFlow.value = AuthModel()
-        prefs.edit { clear() }
+        prefs.edit{ clear() }
         sendPushToken()
     }
 

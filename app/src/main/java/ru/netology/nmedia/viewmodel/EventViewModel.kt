@@ -11,45 +11,38 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.dto.FeedItem
-import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.*
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
-import ru.netology.nmedia.repository.PostRepository
+import ru.netology.nmedia.repository.EventRepository
 import ru.netology.nmedia.util.SingleLiveEvent
 import javax.inject.Inject
 
-private val empty = Post(
+private val empty = Event(
     id = 0,
     authorId = 0,
     author = "",
     authorAvatar = "",
     content = "",
+    datetime = "",
     published = "",
     likedByMe = false,
-    ownedByMe = false,
-    mentionedMe = false,
     attachment = null,
-    coords = null,
-    users = null,
+    ownedByMe = false,
 )
 
 @HiltViewModel
 @ExperimentalCoroutinesApi
-class PostViewModel @Inject constructor(
-    private val repository: PostRepository,
+class EventViewModel @Inject constructor(
+    private val repository: EventRepository,
     appAuth: AppAuth
 ) : ViewModel() {
 
-//    private val cached = repository
-//        .data
-//        .cachedIn(viewModelScope)
-
     val data: Flow<PagingData<FeedItem>> = appAuth.authStateFlow
         .flatMapLatest { (id, _) ->
-            repository.data.map { posts ->
-                posts.map { item ->
-                    if (item !is Post) item else item.copy(ownedByMe = item.authorId == id)
+            repository.data.map { events ->
+                events.map { item ->
+                    if (item !is Event ) item else item.copy(ownedByMe = item.authorId == id)
                 }
             }
         }
@@ -62,19 +55,16 @@ class PostViewModel @Inject constructor(
     val dataState: LiveData<FeedModelState>
         get() = _dataState
 
-    private val _postCreated = SingleLiveEvent<Unit>()
-    val postCreated: LiveData<Unit>
-        get() = _postCreated
-
-    private var _activeData = MutableLiveData(empty)
-    val activeData: LiveData<Post>
-        get() = _activeData
+    private val edited = MutableLiveData(empty)
+    private val _eventCreated = SingleLiveEvent<Unit>()
+    val eventCreated: LiveData<Unit>
+        get() = _eventCreated
 
     init {
-        loadPosts()
+        loadEvents()
     }
 
-    private fun loadPosts() = viewModelScope.launch {
+    private fun loadEvents() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
             repository.getInitial()
@@ -85,8 +75,8 @@ class PostViewModel @Inject constructor(
     }
 
     fun save() {
-        _activeData.value?.let {
-            _postCreated.value = Unit
+        edited.value?.let {
+            _eventCreated.value = Unit
             viewModelScope.launch {
                 try {
                     _photoState.value?.let { photoModel ->
@@ -99,60 +89,33 @@ class PostViewModel @Inject constructor(
             }
         }
         _photoState.value = null
-        clear()
+        edited.value = empty
     }
 
-    fun clear() {
-        _activeData.value = empty
-    }
-
-    fun edit(post: Post) {
-        _activeData.value = post
-    }
-
-    fun getById(id: Long) {
-        viewModelScope.launch {
-            try {
-                _activeData.value = repository.getById(id)
-            } catch (_: Exception) {
-            }
-        }
+    fun edit(event: Event) {
+        edited.value = event
     }
 
     fun changeContent(content: String) {
         val text = content.trim()
-        if (_activeData.value?.content == text) {
+        if (edited.value?.content == text) {
             return
         }
-        _activeData.value = _activeData.value?.copy(content = text)
+        edited.value = edited.value?.copy(content = text)
     }
 
     fun changePhoto(photoModel: PhotoModel?) {
         _photoState.value = photoModel
     }
 
+    fun likeById(id: Long) {
+        TODO()
+    }
+
     fun removeById(id: Long) {
         viewModelScope.launch {
             try {
                 repository.removeById(id)
-            } catch (_: Exception) {
-            }
-        }
-    }
-
-    fun likeById(id: Long) {
-        viewModelScope.launch {
-            try {
-                repository.likeById(id)
-            } catch (_: Exception) {
-            }
-        }
-    }
-
-    fun disLikeById(id: Long) {
-        viewModelScope.launch {
-            try {
-                repository.disLikeById(id)
             } catch (_: Exception) {
             }
         }

@@ -3,7 +3,10 @@ package ru.netology.nmedia.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import android.widget.Button
+import android.widget.LinearLayout
 import androidx.core.view.MenuProvider
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -19,36 +22,65 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.FeedAdapter
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PagingLoadStateAdapter
-import ru.netology.nmedia.databinding.FragmentFeedBinding
+import ru.netology.nmedia.databinding.FragmentPostFeedBinding
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.viewmodel.AppAuthModel
+import ru.netology.nmedia.ui.EditPostFragment.Companion.ARG_EDIT_POST_ID
+import ru.netology.nmedia.ui.ViewPostFragment.Companion.ARG_VIEW_POST_ID
+import ru.netology.nmedia.viewmodel.AppAuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class FeedFragment : Fragment() {
+class PostFeedFragment : Fragment() {
 
     private val viewModel: PostViewModel by activityViewModels()
-    private val authViewModel: AppAuthModel by viewModels()
+    private val authViewModel: AppAuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentFeedBinding.inflate(inflater, container, false)
+
+        (activity as AppActivity).apply {
+            findViewById<LinearLayout>(R.id.contentMenu).isGone = false
+            findViewById<Button>(R.id.posts).isEnabled = false
+            findViewById<Button>(R.id.events).isEnabled = true
+        }
+
+        val binding = FragmentPostFeedBinding.inflate(
+            inflater,
+            container,
+            false)
 
         val adapter = FeedAdapter(object : OnInteractionListener {
 
+            override fun onContent(post: Post) {
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_viewPostFragment,
+                    Bundle().apply {
+                        ARG_VIEW_POST_ID = post.id.toString()
+                    }
+                )
+            }
+
             override fun onEdit(post: Post) {
-                viewModel.edit(post)
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_editPostFragment,
+                    Bundle().apply {
+                        ARG_EDIT_POST_ID = post.id.toString()
+                    }
+                )
             }
 
             override fun onLike(post: Post) {
                 if (!authViewModel.isAuthorized) {
-                    findNavController().navigate(R.id.action_feedFragment_to_authorizationFragment)
-                } else {
-                    viewModel.likeById(post.id)
+                    findNavController().navigate(R.id.action_feedFragment_to_authenticationFragment)
+                } else { if (post.likedByMe){
+                        viewModel.disLikeById(post.id) }
+                    else {
+                        viewModel.likeById(post.id)
+                    }
                 }
             }
 
@@ -67,7 +99,7 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
-        })
+        }, null)
 
         var currentMenuProvider: MenuProvider? = null
 
@@ -85,18 +117,19 @@ class FeedFragment : Fragment() {
                     return when (menuItem.itemId) {
                         R.id.signIn -> {
                             findNavController().navigate(
-                                R.id.action_feedFragment_to_authorizationFragment,
+                                R.id.action_feedFragment_to_authenticationFragment,
                             )
                             true
                         }
                         R.id.signUp -> {
-                            //AppAuth.getInstance().setUser(AuthModel(5, "x-token"))
+                            findNavController().navigate(
+                            R.id.action_feedFragment_to_registrationFragment,
+                            )
                             true
                         }
                         R.id.signOut -> {
-                            println("Going to quit!")
                             findNavController().navigate(
-                                R.id.action_feedFragment_to_unAuthorizationFragment,
+                                R.id.action_feedFragment_to_unAuthenticationFragment,
                             )
                             true
                         }
@@ -121,7 +154,7 @@ class FeedFragment : Fragment() {
 
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
-            binding.swiperefresh.isRefreshing = state.refreshing
+            binding.swipeRefresh.isRefreshing = state.refreshing
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { adapter.refresh() }
@@ -137,20 +170,27 @@ class FeedFragment : Fragment() {
 
         lifecycleScope.launchWhenCreated {
             adapter.loadStateFlow.collectLatest { state ->
-                binding.swiperefresh.isRefreshing =
+                binding.swipeRefresh.isRefreshing =
                     state.refresh is LoadState.Loading
             }
         }
 
-        binding.swiperefresh.setOnRefreshListener {
+        binding.swipeRefresh.setOnRefreshListener {
             adapter.refresh()
         }
 
         binding.fab.setOnClickListener {
             if (!authViewModel.isAuthorized) {
-                findNavController().navigate(R.id.action_feedFragment_to_authorizationFragment)
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_authenticationFragment
+                )
             } else {
-                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_editPostFragment,
+                    Bundle().apply {
+                        ARG_EDIT_POST_ID = null
+                    }
+                )
             }
         }
         return binding.root
