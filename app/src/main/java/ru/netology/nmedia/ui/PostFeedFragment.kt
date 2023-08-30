@@ -14,9 +14,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
+import androidx.paging.map
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.FeedAdapter
@@ -24,17 +26,19 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PagingLoadStateAdapter
 import ru.netology.nmedia.databinding.FragmentPostFeedBinding
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.ui.EditPostFragment.Companion.ARG_EDIT_POST_ID
-import ru.netology.nmedia.ui.ViewPostFragment.Companion.ARG_VIEW_POST_ID
+import ru.netology.nmedia.ui.PostEditFragment.Companion.ARG_EDIT_POST_ID
+import ru.netology.nmedia.ui.PostViewFragment.Companion.ARG_VIEW_POST_ID
 import ru.netology.nmedia.viewmodel.AppAuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
+import ru.netology.nmedia.viewmodel.UserViewModel
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class PostFeedFragment : Fragment() {
 
-    private val viewModel: PostViewModel by activityViewModels()
+    private val postViewModel: PostViewModel by activityViewModels()
     private val authViewModel: AppAuthViewModel by viewModels()
+    private val userViewModel: UserViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,10 +46,13 @@ class PostFeedFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
+        userViewModel.loadUsers()
+
         (activity as AppActivity).apply {
             findViewById<LinearLayout>(R.id.contentMenu).isGone = false
             findViewById<Button>(R.id.posts).isEnabled = false
             findViewById<Button>(R.id.events).isEnabled = true
+            findViewById<Button>(R.id.jobs).isEnabled = true
         }
 
         val binding = FragmentPostFeedBinding.inflate(
@@ -53,20 +60,24 @@ class PostFeedFragment : Fragment() {
             container,
             false)
 
-        val adapter = FeedAdapter(object : OnInteractionListener {
+        val adapter = FeedAdapter(postViewModel, viewLifecycleOwner, object : OnInteractionListener {
 
             override fun onContent(post: Post) {
                 findNavController().navigate(
-                    R.id.action_feedFragment_to_viewPostFragment,
+                    R.id.action_postFeedFragment_to_postViewFragment,
                     Bundle().apply {
                         ARG_VIEW_POST_ID = post.id.toString()
                     }
                 )
             }
 
+            override fun onAudioAttachment(post: Post) {
+                postViewModel.useAudioAttachment(post)
+            }
+
             override fun onEdit(post: Post) {
                 findNavController().navigate(
-                    R.id.action_feedFragment_to_editPostFragment,
+                    R.id.action_postFeedFragment_to_postEditFragment,
                     Bundle().apply {
                         ARG_EDIT_POST_ID = post.id.toString()
                     }
@@ -75,17 +86,18 @@ class PostFeedFragment : Fragment() {
 
             override fun onLike(post: Post) {
                 if (!authViewModel.isAuthorized) {
-                    findNavController().navigate(R.id.action_feedFragment_to_authenticationFragment)
-                } else { if (post.likedByMe){
-                        viewModel.disLikeById(post.id) }
+                    findNavController().navigate(R.id.action_postFeedFragment_to_authEnableFragment)
+                } else {
+                    if (post.likedByMe){
+                        postViewModel.disLikeById(post.id) }
                     else {
-                        viewModel.likeById(post.id)
+                        postViewModel.likeById(post.id)
                     }
                 }
             }
 
             override fun onRemove(post: Post) {
-                viewModel.removeById(post.id)
+                postViewModel.removeById(post.id)
             }
 
             override fun onShare(post: Post) {
@@ -99,7 +111,7 @@ class PostFeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
-        }, null)
+        }, null, null, null)
 
         var currentMenuProvider: MenuProvider? = null
 
@@ -117,19 +129,19 @@ class PostFeedFragment : Fragment() {
                     return when (menuItem.itemId) {
                         R.id.signIn -> {
                             findNavController().navigate(
-                                R.id.action_feedFragment_to_authenticationFragment,
+                                R.id.action_postFeedFragment_to_authEnableFragment,
                             )
                             true
                         }
                         R.id.signUp -> {
                             findNavController().navigate(
-                            R.id.action_feedFragment_to_registrationFragment,
+                            R.id.action_postFeedFragment_to_registrationFragment,
                             )
                             true
                         }
                         R.id.signOut -> {
                             findNavController().navigate(
-                                R.id.action_feedFragment_to_unAuthenticationFragment,
+                                R.id.action_postFeedFragment_to_authDisableFragment,
                             )
                             true
                         }
@@ -152,7 +164,7 @@ class PostFeedFragment : Fragment() {
             }),
         )
 
-        viewModel.dataState.observe(viewLifecycleOwner) { state ->
+        postViewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             binding.swipeRefresh.isRefreshing = state.refreshing
             if (state.error) {
@@ -163,7 +175,7 @@ class PostFeedFragment : Fragment() {
         }
 
         lifecycleScope.launchWhenCreated {
-            viewModel.data.collectLatest {
+            postViewModel.data.collectLatest {
                 adapter.submitData(it)
             }
         }
@@ -182,11 +194,11 @@ class PostFeedFragment : Fragment() {
         binding.fab.setOnClickListener {
             if (!authViewModel.isAuthorized) {
                 findNavController().navigate(
-                    R.id.action_feedFragment_to_authenticationFragment
+                    R.id.action_postFeedFragment_to_authEnableFragment
                 )
             } else {
                 findNavController().navigate(
-                    R.id.action_feedFragment_to_editPostFragment,
+                    R.id.action_postFeedFragment_to_postEditFragment,
                     Bundle().apply {
                         ARG_EDIT_POST_ID = null
                     }

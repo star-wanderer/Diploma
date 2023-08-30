@@ -12,13 +12,13 @@ interface PostRepository {
     val authData: LiveData<AuthModel>
     val data: Flow<PagingData<FeedItem>>
     suspend fun getInitial()
-    fun getNewerCount(id: Long): Flow<Int>
     suspend fun save(post: Post)
     suspend fun removeById(id: Long)
     suspend fun likeById(id: Long)
     suspend fun disLikeById(id: Long)
     suspend fun getById(id: Long) : Post
-    suspend fun update()
     suspend fun saveWithAttachment(file: File, post: Post)
+//    fun getNewerCount(id: Long): Flow<Int>
+//    suspend fun update()
 }
 

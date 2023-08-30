@@ -1,0 +1,11 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Peter Pen",
+      "authorAvatar": "@sample/posts_avatars",
+      "selected": true
+    }
+  ]
+}
+

@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class UnAuthenticationFragment : Fragment() {
+class AuthDisableFragment : Fragment() {
 
     @Inject
     lateinit var appAuth: AppAuth

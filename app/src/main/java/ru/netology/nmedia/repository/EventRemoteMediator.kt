@@ -5,10 +5,10 @@ import androidx.room.withTransaction
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dao.EventDao
 import ru.netology.nmedia.dao.EventRemoteKeyDao
+import ru.netology.nmedia.dao.EventSpeakerDao
+import ru.netology.nmedia.dao.EventUserDao
 import ru.netology.nmedia.db.AppDb
-import ru.netology.nmedia.entity.EventEntity
-import ru.netology.nmedia.entity.EventRemoteKeyEntity
-import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.entity.*
 import ru.netology.nmedia.error.ApiError
 
 @OptIn(ExperimentalPagingApi::class)
@@ -16,6 +16,8 @@ class EventRemoteMediator(
     private val service: ApiService,
     private val db: AppDb,
     private val eventDao: EventDao,
+    private val eventUserDao: EventUserDao,
+    private val eventSpeakerDao: EventSpeakerDao,
     private val eventRemoteKeyDao: EventRemoteKeyDao,
 ) : RemoteMediator<Int, EventEntity>() {
     override suspend fun load(
@@ -62,6 +64,8 @@ class EventRemoteMediator(
                         )
                     )
                     eventDao.removeAllEvents()
+                    eventUserDao.removeAll()
+                    eventSpeakerDao.removeAll()
                 }
                 LoadType.PREPEND->{
                     eventRemoteKeyDao.insert(
@@ -82,6 +86,8 @@ class EventRemoteMediator(
             }
         }
             eventDao.insert(body.toEntity())
+            eventUserDao.insert(body.toUserEntity())
+            eventSpeakerDao.insert(body.toSpeakerEntity())
             return MediatorResult.Success(endOfPaginationReached = body.isEmpty())
 
         } catch (e: Exception) {

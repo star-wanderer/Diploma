@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Galactic paradise",
+      "authorAvatar": "@sample/posts_avatars",
+      "position": "Worker",
+      "link": "https://www.linux.org",
+      "start" : "10 January 2018",
+      "finish" : "01 February 2020"
+    }
+  ]
+}
+

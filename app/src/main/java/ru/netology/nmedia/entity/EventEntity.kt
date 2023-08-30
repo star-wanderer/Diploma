@@ -2,15 +2,10 @@ package ru.netology.nmedia.entity
 
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.PrimaryKey
-import ru.netology.nmedia.dto.Attachment
-import ru.netology.nmedia.dto.Event
-import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.dto.Type
+import ru.netology.nmedia.dto.*
 
-@Entity
+@Entity (primaryKeys = ["id"])
 data class EventEntity(
-    @PrimaryKey(autoGenerate = true)
     val isNew: Boolean = true,
     val id: Long,
     val authorId: Long,
@@ -19,10 +14,14 @@ data class EventEntity(
     val content: String,
     val datetime: String,
     val published: String,
+    val participatedByMe: Boolean = false,
     val ownedByMe: Boolean = false,
     val likedByMe: Boolean,
     @Embedded
-    val attachment: Attachment?
+    val attachment: Attachment?,
+    @Embedded
+    val coords: Coordinates?,
+    val eventType: Type,
 ) {
     fun toDto() =
         Event(id,
@@ -32,9 +31,16 @@ data class EventEntity(
             content,
             datetime,
             published,
+            participatedByMe,
             ownedByMe,
             likedByMe,
-            attachment)
+            attachment,
+            coords,
+            eventType,
+            null,
+            null,
+            null,
+        )
 
     companion object {
         fun fromDto(dto: Event) =
@@ -47,10 +53,12 @@ data class EventEntity(
                 content = dto.content,
                 datetime = dto.datetime,
                 published = dto.published,
+                participatedByMe = dto.participatedByMe,
                 ownedByMe= dto.ownedByMe,
                 likedByMe = dto.likedByMe,
                 attachment = dto.attachment,
-
+                coords = dto.coords,
+                eventType = dto.type,
             )
 
         fun fromDtoInitial(dto: Event) =
@@ -63,13 +71,16 @@ data class EventEntity(
                 content = dto.content,
                 datetime = dto.datetime,
                 published = dto.published,
+                participatedByMe = dto.participatedByMe,
                 ownedByMe= dto.ownedByMe,
                 likedByMe = dto.likedByMe,
                 attachment = dto.attachment,
+                coords = dto.coords,
+                eventType = dto.type,
             )
     }
 }
 
 fun List<EventEntity>.toDto(): List<Event> = map(EventEntity::toDto)
-fun List<Event>.toEntity(): List<EventEntity> = map(EventEntity::fromDto)
-fun List<Event>.toEntityInitial(): List<EventEntity> = map(EventEntity::fromDtoInitial)
+fun List<Event>.toEntity(): List<EventEntity> = map(EventEntity.Companion::fromDto)
+fun List<Event>.toEntityInitial(): List<EventEntity> = map(EventEntity.Companion::fromDtoInitial)

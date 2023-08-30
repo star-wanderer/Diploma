@@ -4,11 +4,6 @@ sealed class FeedItem{
     abstract val id: Long
 }
 
-data class TextSeparator(
-    override val id: Long,
-    var text: String,
-): FeedItem()
-
 data class Post(
     override val id: Long,
     val authorId: Long,
@@ -32,9 +27,35 @@ data class Event(
     val content: String,
     val datetime: String,
     val published: String,
+    val participatedByMe: Boolean,
     val ownedByMe: Boolean = false,
     val likedByMe: Boolean,
     val attachment: Attachment?,
+    val coords: Coordinates?,
+    val type: Type,
+    val users: Map<String,UserPreview>?,
+    val speakerIds: ArrayList<Long>?,
+    val speakers: Map<Long,String?>?,
+): FeedItem()
+
+data class Job(
+    override val id: Long,
+    val name: String,
+    val position: String,
+    val start: String,
+    val finish: String?,
+    val link: String?,
+): FeedItem()
+
+data class User(
+    override val id: Long,
+    val name: String,
+    val avatar: String?,
+): FeedItem()
+
+data class TextSeparator(
+    override val id: Long,
+    var text: String,
 ): FeedItem()
 
 enum class Type {
@@ -42,7 +63,7 @@ enum class Type {
 }
 
 data class Attachment (
-    val url: String,
+    val url: String = "",
     val type: AttachmentType?,
 )
 

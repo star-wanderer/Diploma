@@ -11,6 +11,10 @@ import javax.inject.Singleton
 interface RepositoryModule {
     @Singleton
     @Binds
+    fun bindsUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Singleton
+    @Binds
     fun bindsPostRepository(impl: PostRepositoryImpl): PostRepository
 
     @Singleton
@@ -19,5 +23,9 @@ interface RepositoryModule {
 
     @Singleton
     @Binds
-    fun bindsSuerAuthRepository(impl:UserAuthRepositoryImpl): UserAuthRepository
+    fun bindsJobRepository(impl: JobRepositoryImpl): JobRepository
+
+    @Singleton
+    @Binds
+    fun bindsUserAuthRepository(impl:UserAuthRepositoryImpl): UserAuthRepository
 }

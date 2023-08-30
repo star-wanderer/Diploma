@@ -25,11 +25,14 @@ interface EventDao {
     @Query("SELECT COUNT(*) FROM EventEntity WHERE isNew = 1")
     suspend fun getIsNewCount(): Int
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(event: EventEntity)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(events: List<EventEntity>)
+
+    @Query("SELECT * FROM EventEntity WHERE id = :id")
+    suspend fun getById(id: Long) : EventEntity
 
     @Query("DELETE FROM EventEntity WHERE id = :id")
     suspend fun removeById(id: Long)
@@ -38,15 +41,10 @@ interface EventDao {
     suspend fun update()
 
     @Query("SELECT * FROM EventEntity WHERE id < :id ORDER BY id DESC LIMIT :count")
-    suspend fun getBefore(
-        id: Long,
-        count: Int
-    ): List<EventEntity>
+    suspend fun getBefore(id: Long, count: Int): List<EventEntity>
 
     @Query("SELECT * FROM EventEntity ORDER BY id DESC LIMIT :count")
-    suspend fun getLatest(
-        count: Int
-    ): List<EventEntity>
+    suspend fun getLatest(count: Int): List<EventEntity>
 
     @Query("DELETE FROM EventEntity")
     suspend fun removeAll()

@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="weight_chain_value">25</dimen>
+    <dimen name="weight_chain_value">33</dimen>
     <dimen name="common_spacing">16dp</dimen>
     <dimen name="common_spacing_negative">-16dp</dimen>
+    <dimen name="custom_spacing">8dp</dimen>
     <dimen name="posts_avatar_size">48dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="checkbox_padding_start">8dp</dimen>
     <dimen name="icon_button_padding">12dp</dimen>
     <dimen name="icon_button_min_size">48dp</dimen>
     <dimen name="margin_bottom">32dp</dimen>
+    <dimen name="margin_small_bottom">8dp</dimen>
     <dimen name="text_field_height">48dp</dimen>
+    <dimen name="text_field_height_2">38dp</dimen>
+    <dimen name="text_header_height">16sp</dimen>
+    <dimen name="video_height">200dp</dimen>
 </resources>
 

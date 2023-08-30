@@ -6,8 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import retrofit2.Response
-import ru.netology.nmedia.entity.EventEntity
 import ru.netology.nmedia.entity.PostEntity
 
 @Dao
@@ -27,10 +25,10 @@ interface PostDao {
     @Query("SELECT COUNT(*) FROM PostEntity WHERE isNew = 1")
     suspend fun getIsNewCount(): Int
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(post: PostEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(posts: List<PostEntity>)
 
     @Query("SELECT * FROM PostEntity WHERE id = :id")
@@ -43,15 +41,10 @@ interface PostDao {
     suspend fun update()
 
     @Query("SELECT * FROM PostEntity WHERE id < :id ORDER BY id DESC LIMIT :count")
-    suspend fun getBefore(
-        id: Long,
-        count: Int
-    ): List<PostEntity>
+    suspend fun getBefore(id: Long, count: Int): List<PostEntity>
 
     @Query("SELECT * FROM PostEntity ORDER BY id DESC LIMIT :count")
-    suspend fun getLatest(
-        count: Int
-    ): List<PostEntity>
+    suspend fun getLatest(count: Int): List<PostEntity>
 
     @Query("DELETE FROM PostEntity")
     suspend fun removeAll()

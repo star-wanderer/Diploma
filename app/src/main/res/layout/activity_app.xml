@@ -36,6 +36,16 @@
             android:textColor="@color/button_text_tint"
             />
 
+        <Button
+            android:id="@+id/jobs"
+            android:layout_weight="@dimen/weight_chain_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:text="@string/get_jobs"
+            android:textColor="@color/button_text_tint"
+            />
+
     </LinearLayout>
 
     <androidx.fragment.app.FragmentContainerView

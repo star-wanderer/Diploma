@@ -1,11 +1,16 @@
 package ru.netology.nmedia.ui
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.AttributeSet
+import android.view.View
 import android.widget.Button
 import androidx.navigation.findNavController
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -13,7 +18,8 @@ import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.netology.nmedia.R
-import ru.netology.nmedia.ui.EditPostFragment.Companion.ARG_EDIT_POST_ID
+import ru.netology.nmedia.ui.PostEditFragment.Companion.ARG_EDIT_POST_ID
+import ru.netology.nmedia.viewmodel.UserViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -31,11 +37,15 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         super.onCreate(savedInstanceState)
 
         findViewById<Button>(R.id.posts).setOnClickListener{
-            findNavController(R.id.nav_host_fragment).navigate(R.id.feedFragment)
+            findNavController(R.id.nav_host_fragment).navigate(R.id.postFeedFragment)
         }
 
         findViewById<Button>(R.id.events).setOnClickListener{
             findNavController(R.id.nav_host_fragment).navigate(R.id.eventFeedFragment)
+        }
+
+        findViewById<Button>(R.id.jobs).setOnClickListener{
+            findNavController(R.id.nav_host_fragment).navigate(R.id.jobFeedFragment)
         }
 
         intent?.let {
@@ -51,7 +61,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             intent.removeExtra(Intent.EXTRA_TEXT)
             findNavController(R.id.nav_host_fragment)
                 .navigate(
-                    R.id.action_feedFragment_to_editPostFragment,
+                    R.id.action_postFeedFragment_to_postEditFragment,
                     Bundle().apply {
                         ARG_EDIT_POST_ID = text
                     }

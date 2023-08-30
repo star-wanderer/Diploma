@@ -10,6 +10,18 @@ import ru.netology.nmedia.db.AppDb
 @Module
 object DaoModule {
     @Provides
+    fun provideUserDao(db: AppDb):UserDao = db.userDao()
+
+    @Provides
+    fun provideUserRemoteKeyDao(db: AppDb): UserRemoteKeyDao = db.userRemoteKeyDao()
+
+    @Provides
+    fun provideJobDao(db: AppDb): JobDao = db.jobDao()
+
+    @Provides
+    fun provideJobRemoteKeyDao(db: AppDb): JobRemoteKeyDao = db.jobRemoteKeyDao()
+
+    @Provides
     fun providePostDao(db: AppDb): PostDao = db.postDao()
 
     @Provides
@@ -22,5 +34,11 @@ object DaoModule {
     fun provideEventDao(db: AppDb): EventDao = db.eventDao()
 
     @Provides
+    fun provideEventUserDao(db: AppDb): EventUserDao = db.eventUserDao()
+
+    @Provides
     fun provideEventRemoteKeyDao(db: AppDb): EventRemoteKeyDao = db.eventRemoteKeyDao()
+
+    @Provides
+    fun provideEventSpeakerDao(db: AppDb): EventSpeakerDao = db.eventSpeakerDao()
 }

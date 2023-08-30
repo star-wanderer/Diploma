@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/common_spacing">
+
+                <ImageView
+                    android:id="@+id/avatar"
+                    android:layout_width="@dimen/posts_avatar_size"
+                    android:layout_height="@dimen/posts_avatar_size"
+                    android:layout_marginBottom="@dimen/common_spacing"
+                    android:contentDescription="@string/description_job_author_avatar"
+                    app:layout_constraintBottom_toBottomOf="@id/footer"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+
+                <TextView
+                    android:id="@+id/start"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/common_spacing"
+                    android:layout_marginEnd="@dimen/custom_spacing"
+                    android:textAlignment="viewStart"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/position"
+                    app:layout_constraintStart_toEndOf="@id/avatar"
+                    app:layout_constraintEnd_toStartOf="@id/finish"
+                    tools:text="@sample/jobs.json/data/start"/>
+
+                <TextView
+                    android:id="@+id/finish"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/common_spacing"
+                    android:layout_marginEnd="@dimen/common_spacing"
+                    android:textAlignment="viewEnd"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/position"
+                    app:layout_constraintStart_toEndOf="@id/start"
+                    app:layout_constraintEnd_toStartOf="@id/menu"
+                    tools:text="@sample/jobs.json/data/finish"/>
+
+                <TextView
+                    android:id="@+id/position"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/common_spacing"
+                    android:layout_marginEnd="@dimen/common_spacing"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textAlignment="center"
+                    app:layout_constraintTop_toBottomOf="@id/start"
+                    app:layout_constraintBottom_toTopOf="@+id/name"
+                    app:layout_constraintEnd_toStartOf="@id/menu"
+                    app:layout_constraintStart_toEndOf="@id/avatar"
+                    tools:text="@sample/jobs.json/data/position"/>
+
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/common_spacing"
+                    android:layout_marginEnd="@dimen/common_spacing"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textAlignment="center"
+                    app:layout_constraintTop_toBottomOf="@id/position"
+                    app:layout_constraintBottom_toTopOf="@id/link"
+                    app:layout_constraintEnd_toStartOf="@id/menu"
+                    app:layout_constraintStart_toEndOf="@id/avatar"
+                    tools:text="@sample/jobs.json/data/name"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/common_spacing"
+                    android:contentDescription="@string/description_post_menu"
+                    app:icon="@drawable/ic_more_vert_24"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/footer"
+                    style="@style/Widget.AppTheme.IconButton"/>
+
+                <TextView
+                    android:id="@+id/link"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/common_spacing"
+                    android:layout_marginEnd="@dimen/common_spacing"
+                    android:ellipsize="end"
+                    android:autoLink="web"
+                    android:textColorLink="@color/colorOrangeDark"
+                    android:textAlignment="center"
+                    app:layout_constraintTop_toBottomOf="@id/name"
+                    app:layout_constraintBottom_toTopOf="@+id/footer"
+                    app:layout_constraintEnd_toStartOf="@id/menu"
+                    app:layout_constraintStart_toEndOf="@id/avatar"
+                    android:layout_marginBottom="@dimen/common_spacing"
+                    tools:text="@sample/jobs.json/data/link"/>
+
+                <androidx.constraintlayout.widget.Barrier
+                    android:id="@+id/footer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:barrierDirection="bottom"
+                    app:constraint_referenced_ids="avatar,start,menu"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

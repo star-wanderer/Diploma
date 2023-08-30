@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.EditPostFragment">
+    tools:context=".ui.PostEditFragment">
     
     <ScrollView
         android:layout_width="match_parent"
@@ -47,6 +47,49 @@
                     android:text="@string/remove"
                     android:layout_gravity="bottom|center_horizontal"/>
             </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/audio_preview_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:visibility="invisible">
+
+                <ImageView
+                    android:id="@+id/audio_preview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/removeAudio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/remove"
+                    android:layout_gravity="bottom|center_horizontal"/>
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/video_preview_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:visibility="invisible">
+
+                <ImageView
+                    android:id="@+id/video_preview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/removeVideo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/remove"
+                    android:layout_gravity="bottom|center_horizontal"/>
+            </FrameLayout>
+
         </LinearLayout>
     </ScrollView>
 
@@ -57,8 +100,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
-        >
+        style="@style/Widget.MaterialComponents.BottomAppBar.Colored">
 
         <ImageView
             android:id="@+id/pick_photo"
@@ -66,17 +108,39 @@
             android:layout_height="wrap_content"
             android:background="?selectableItemBackgroundBorderless"
             android:padding="@dimen/icon_button_padding"
-            android:src="@drawable/ic_baseline_add_photo_alternate_24">
+            android:src="@drawable/ic_photo_pick_add_24dp">
         </ImageView>
 
         <ImageView
-            android:id="@+id/take_photo"
+            android:id="@+id/pick_audio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?selectableItemBackgroundBorderless"
             android:padding="@dimen/icon_button_padding"
-            android:src="@drawable/ic_baseline_add_a_photo_24">
+            android:src="@drawable/ic_audio_add_24dp">
         </ImageView>
+
+        <ImageView
+            android:id="@+id/pick_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="@dimen/icon_button_padding"
+            android:src="@drawable/ic_video_add_24dp">
+        </ImageView>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="match_parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/audio"
+            android:id="@+id/audioTitle"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:padding="10dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

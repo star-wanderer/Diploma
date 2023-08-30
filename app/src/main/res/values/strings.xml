@@ -2,8 +2,15 @@
     <string name="app_name">NMedia</string>
     <string name="hello">Hello World!</string>
     <string name="description_post_author_avatar">Post author avatar</string>
+    <string name="description_speakers">Speakers</string>
+    <string name="description_job_author_avatar">Job author avatar</string>
+    <string name="description_user">User avatar</string>
     <string name="description_post_menu">Post menu</string>
     <string name="description_post_like">Like</string>
+    <string name="description_user_selected">User Selected</string>
+    <string name="description_event_check_in_out">CheckIn CheckOut</string>
+    <string name="description_play_audio">Play Audio</string>
+    <string name="description_play_video">Play Video</string>
     <string name="description_post_share">Share</string>
     <string name="description_post_save">Save</string>
     <string name="menu_remove">Remove</string>
@@ -12,6 +19,7 @@
     <string name="error_empty_content">Content can\'t be empty</string>
     <string name="chooser_share_post">Share post</string>
     <string name="add_post">Add post</string>
+    <string name="add_job">Add post</string>
     <string name="retry_loading">Retry</string>
     <string name="get_posts">Posts</string>
     <string name="get_events">Events</string>
@@ -31,7 +39,11 @@
     <string name="channel_remote_name">Server notifications</string>
     <string name="channel_remote_description">Notifications from remote server</string>
     <string name="new_post">New Posts Available</string>
+    <string name="new_event">New Events Available</string>
+    <string name="new_job">New Jobs Available</string>
     <string name="remove">Remove</string>
+    <string name="pick_speakers">Pick Speakers</string>
+    <string name="removeAudio">Remove Audio</string>
     <string name="image_description">Image Description</string>
     <string name="singnout">Sign Out</string>
     <string name="signin">Sign In</string>
@@ -53,4 +65,15 @@
     <string name="name">Name</string>
     <string name="authenticate">Authenticate</string>
     <string name="android_resource">android.resource://ru.netology.nmedia/</string>
+    <string name="enter_event_title_here">Enter event title here</string>
+    <string name="enter_calendar_description_here">Calendar control</string>
+    <string name="event_calenar_date">Set event calendar date</string>
+    <string name="offline_event">Offline Event</string>
+    <string name="online_event">Online Event</string>
+    <string name="enter_event_description_here" translatable="false">Enter event description</string>
+    <string name="enter_position_here">Enter position here</string>
+    <string name="enter_link_here">Enter link here</string>
+    <string name="enter_company_name_here">Enter company name here</string>
+    <string name="enter_start_date">Start Date</string>
+    <string name="enter_finish_date">Finish Date</string>
 </resources>

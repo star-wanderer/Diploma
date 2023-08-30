@@ -2,7 +2,7 @@ package ru.netology.nmedia.viewmodel
 
 import androidx.lifecycle.*
 import androidx.paging.PagingData
-import androidx.paging.insertSeparators
+import ru.netology.nmedia.MediaLifecycleObserver
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -11,10 +11,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.model.FeedModelState
-import ru.netology.nmedia.model.PhotoModel
+import ru.netology.nmedia.model.*
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.SingleLiveEvent
 import javax.inject.Inject
@@ -41,18 +42,31 @@ class PostViewModel @Inject constructor(
     appAuth: AppAuth
 ) : ViewModel() {
 
-//    private val cached = repository
-//        .data
-//        .cachedIn(viewModelScope)
+    private val mediaObserver = MediaLifecycleObserver()
 
     val data: Flow<PagingData<FeedItem>> = appAuth.authStateFlow
         .flatMapLatest { (id, _) ->
             repository.data.map { posts ->
                 posts.map { item ->
-                    if (item !is Post) item else item.copy(ownedByMe = item.authorId == id)
+                    if (item !is Post) item else { item.copy(
+                            ownedByMe = item.authorId == id
+                        )
+                    }
                 }
             }
         }
+
+    private val _trackData = MutableLiveData<Track>()
+    val trackData: LiveData<Track>
+        get() = _trackData
+
+    private val _audioState = MutableLiveData<AudioModel?>()
+    val audioState: LiveData<AudioModel?>
+        get() = _audioState
+
+    private val _videoState = MutableLiveData<VideoModel?>()
+    val videoState: LiveData<VideoModel?>
+        get() = _videoState
 
     private val _photoState = MutableLiveData<PhotoModel?>()
     val photoState: LiveData<PhotoModel?>
@@ -66,12 +80,44 @@ class PostViewModel @Inject constructor(
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
-    private var _activeData = MutableLiveData(empty)
-    val activeData: LiveData<Post>
-        get() = _activeData
+    private var _focusPost = MutableLiveData(empty)
+    val focusPost: LiveData<Post>
+        get() = _focusPost
 
     init {
         loadPosts()
+
+        _trackData.value = Track()
+        mediaObserver.apply {
+            player?.setOnCompletionListener {
+                player?.reset()
+                _trackData.value = Track()
+            }
+        }
+    }
+
+    fun useAudioAttachment(post: Post) {
+        mediaObserver.apply {
+            _trackData.value.let{ track ->
+                if (track?.itemId != post.id)
+                    post.attachment?.let { it ->
+                        player?.reset()
+                        _trackData.value  = track?.copy(
+                            isPlaying = true,
+                            url = it.url,
+                            itemId = post.id,
+                        )
+                        this.play(it.url)
+                    }
+                else {
+                    if (!player?.isPlaying!!) {
+                        this.resume()
+                    } else {
+                        this.pause()
+                    }
+                }
+            }
+        }
     }
 
     private fun loadPosts() = viewModelScope.launch {
@@ -85,13 +131,23 @@ class PostViewModel @Inject constructor(
     }
 
     fun save() {
-        _activeData.value?.let {
+        _focusPost.value?.let { post ->
             _postCreated.value = Unit
             viewModelScope.launch {
                 try {
                     _photoState.value?.let { photoModel ->
-                        repository.saveWithAttachment(photoModel.file, it)
-                    } ?: repository.save(it)
+                        repository.saveWithAttachment(photoModel.file,
+                            post.copy(attachment = Attachment(type = AttachmentType.IMAGE)))
+                    } ?:
+                    _audioState.value?.let { audioModel ->
+                        repository.saveWithAttachment(audioModel.file,
+                            post.copy(attachment = Attachment(type = AttachmentType.AUDIO)))
+                    } ?:
+                    _videoState.value?.let { videoModel ->
+                        repository.saveWithAttachment(videoModel.file,
+                            post.copy(attachment = Attachment(type = AttachmentType.VIDEO)))
+                    } ?:
+                    repository.save(post)
                     _dataState.value = FeedModelState()
                 } catch (e: Exception) {
                     _dataState.value = FeedModelState(error = true)
@@ -99,35 +155,58 @@ class PostViewModel @Inject constructor(
             }
         }
         _photoState.value = null
+        _audioState.value = null
+        _videoState.value = null
         clear()
     }
 
     fun clear() {
-        _activeData.value = empty
+        _focusPost.value = empty
     }
 
-    fun edit(post: Post) {
-        _activeData.value = post
-    }
-
-    fun getById(id: Long) {
+    fun getById(id: Long){
         viewModelScope.launch {
             try {
-                _activeData.value = repository.getById(id)
-            } catch (_: Exception) {
+                _focusPost.value = repository.getById(id)
+                println("GetById:${_focusPost.value}")
+            }
+            catch (_: Exception) {
             }
         }
     }
 
     fun changeContent(content: String) {
         val text = content.trim()
-        if (_activeData.value?.content == text) {
+        if (_focusPost.value?.content == text) {
             return
         }
-        _activeData.value = _activeData.value?.copy(content = text)
+        _focusPost.value = _focusPost.value?.copy(content = text)
+    }
+
+    fun changeAudio(audioModel: AudioModel?) {
+        _videoState.value = null
+        _photoState.value = null
+        if (audioModel == null){
+            _focusPost.value = _focusPost.value?.copy(attachment = null)
+        }
+        _audioState.value = audioModel
+    }
+
+    fun changeVideo(videoModel: VideoModel?) {
+        _audioState.value = null
+        _photoState.value = null
+        if (videoModel == null){
+            _focusPost.value = _focusPost.value?.copy(attachment = null)
+        }
+        _videoState.value = videoModel
     }
 
     fun changePhoto(photoModel: PhotoModel?) {
+        _videoState.value = null
+        _photoState.value = null
+        if (photoModel == null){
+            _focusPost.value = _focusPost.value?.copy(attachment = null)
+        }
         _photoState.value = photoModel
     }
 

@@ -18,13 +18,12 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentAuthenticateBinding
 import ru.netology.nmedia.model.AuthCredsModel
 import ru.netology.nmedia.model.AuthModel
-import ru.netology.nmedia.model.CredsModel
 import ru.netology.nmedia.viewmodel.UserAuthViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
-class AuthenticationFragment : Fragment() {
+class AuthEnableFragment : Fragment() {
 
     @Inject
     lateinit var appAuth: AppAuth

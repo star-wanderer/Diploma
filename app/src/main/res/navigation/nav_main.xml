@@ -3,80 +3,173 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_main"
-    app:startDestination="@id/feedFragment">
+    app:startDestination="@id/postFeedFragment">
 
     <fragment
-        android:id="@+id/feedFragment"
+        android:id="@+id/postFeedFragment"
         android:name="ru.netology.nmedia.ui.PostFeedFragment"
         android:label="fragment_feed"
         tools:layout="@layout/fragment_post_feed">
         <action
-            android:id="@+id/action_feedFragment_to_viewPostFragment"
-            app:destination="@id/viewPostFragment" />
+            android:id="@+id/action_postFeedFragment_to_postViewFragment"
+            app:destination="@id/postViewFragment" />
         <action
-            android:id="@+id/action_feedFragment_to_authenticationFragment"
-            app:destination="@id/authenticationFragment" />
+            android:id="@+id/action_postFeedFragment_to_authEnableFragment"
+            app:destination="@id/authEnableFragment" />
         <action
-            android:id="@+id/action_feedFragment_to_unAuthenticationFragment"
-            app:destination="@id/unAuthenticationFragment" />
+            android:id="@+id/action_postFeedFragment_to_authDisableFragment"
+            app:destination="@id/authDisableFragment" />
         <action
-            android:id="@+id/action_feedFragment_to_registrationFragment"
+            android:id="@+id/action_postFeedFragment_to_registrationFragment"
             app:destination="@id/registrationFragment" />
         <action
-            android:id="@+id/action_feedFragment_self"
-            app:destination="@id/feedFragment" />
-        <action
-            android:id="@+id/action_feedFragment_self2"
-            app:destination="@id/feedFragment" />
-        <action
-            android:id="@+id/action_feedFragment_self3"
-            app:destination="@id/feedFragment" />
-        <action
-            android:id="@+id/action_feedFragment_to_eventFeedFragment"
+            android:id="@+id/action_postFeedFragment_to_eventFeedFragment"
             app:destination="@id/eventFeedFragment" />
         <action
-            android:id="@+id/action_feedFragment_to_editPostFragment"
-            app:destination="@id/editPostFragment" />
+            android:id="@+id/action_postFeedFragment_to_postEditFragment"
+            app:destination="@id/postEditFragment" />
+        <action
+            android:id="@+id/action_postFeedFragment_to_jobFeedFragment"
+            app:destination="@id/jobFeedFragment" />
     </fragment>
     <fragment
-        android:id="@+id/editPostFragment"
-        android:name="ru.netology.nmedia.ui.EditPostFragment"
+        android:id="@+id/postEditFragment"
+        android:name="ru.netology.nmedia.ui.PostEditFragment"
         android:label="fragment_edit_post"
         tools:layout="@layout/fragment_edit_post" />
     <fragment
-        android:id="@+id/viewPostFragment"
-        android:name="ru.netology.nmedia.ui.ViewPostFragment"
-        android:label="ViewPostFragment" />
-    <fragment
-        android:id="@+id/authenticationFragment"
-        android:name="ru.netology.nmedia.ui.AuthenticationFragment"
-        android:label="AuthenticationFragment" >
+        android:id="@+id/postViewFragment"
+        android:name="ru.netology.nmedia.ui.PostViewFragment"
+        android:label="ViewPostFragment" >
         <action
-            android:id="@+id/action_authenticationFragment_to_feedFragment"
-            app:destination="@id/feedFragment" />
+            android:id="@+id/action_postViewFragment_to_authEnableFragment"
+            app:destination="@id/authEnableFragment" />
     </fragment>
     <fragment
-        android:id="@+id/unAuthenticationFragment"
-        android:name="ru.netology.nmedia.ui.UnAuthenticationFragment"
+        android:id="@+id/authEnableFragment"
+        android:name="ru.netology.nmedia.ui.AuthEnableFragment"
+        android:label="AuthenticationFragment" >
+        <action
+            android:id="@+id/action_authenticationFragment_to_postFeedFragment"
+            app:destination="@id/postFeedFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/authDisableFragment"
+        android:name="ru.netology.nmedia.ui.AuthDisableFragment"
         android:label="UnAuthenticationFragment" >
         <action
-            android:id="@+id/action_unAuthenticationFragment_to_feedFragment"
-            app:destination="@id/feedFragment" />
+            android:id="@+id/action_unAuthenticationFragment_to_postFeedFragment"
+            app:destination="@id/postFeedFragment" />
+        <action
+            android:id="@+id/action_authDisableFragment_to_eventFeedFragment"
+            app:destination="@id/eventFeedFragment" />
     </fragment>
     <fragment
         android:id="@+id/registrationFragment"
         android:name="ru.netology.nmedia.ui.RegistrationFragment"
         android:label="RegistrationFragment" >
         <action
-            android:id="@+id/action_registrationFragment_to_feedFragment"
-            app:destination="@id/feedFragment" />
+            android:id="@+id/action_registrationFragment_to_postFeedFragment"
+            app:destination="@id/postFeedFragment" />
+        <action
+            android:id="@+id/action_registrationFragment_to_eventFeedFragment"
+            app:destination="@id/eventFeedFragment" />
     </fragment>
     <fragment
         android:id="@+id/eventFeedFragment"
         android:name="ru.netology.nmedia.ui.EventFeedFragment"
         android:label="EventFeedFragment" >
         <action
-            android:id="@+id/action_eventFeedFragment_to_feedFragment"
-            app:destination="@id/feedFragment" />
+            android:id="@+id/action_eventFeedFragment_to_postFeedFragment"
+            app:destination="@id/postFeedFragment" />
+        <action
+            android:id="@+id/action_eventFeedFragment_to_eventViewFragment"
+            app:destination="@id/eventViewFragment" />
+        <action
+            android:id="@+id/action_eventFeedFragment_to_eventEditFragment"
+            app:destination="@id/eventEditFragment" />
+        <action
+            android:id="@+id/action_eventFeedFragment_to_authEnableFragment"
+            app:destination="@id/authEnableFragment" />
+        <action
+            android:id="@+id/action_eventFeedFragment_to_authDisableFragment"
+            app:destination="@id/authDisableFragment" />
+        <action
+            android:id="@+id/action_eventFeedFragment_to_registrationFragment"
+            app:destination="@id/registrationFragment" />
+        <action
+            android:id="@+id/action_eventFeedFragment_to_postFeedFragment2"
+            app:destination="@id/postFeedFragment" />
+        <action
+            android:id="@+id/action_eventFeedFragment_to_jobFeedFragment"
+            app:destination="@id/jobFeedFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/eventEditFragment"
+        android:name="ru.netology.nmedia.ui.EventEditFragment"
+        android:label="EventEditFragment" >
+        <action
+            android:id="@+id/action_eventEditFragment_to_userFeedFragment"
+            app:destination="@id/userFeedFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/eventViewFragment"
+        android:name="ru.netology.nmedia.ui.EventViewFragment"
+        android:label="EventViewFragment" >
+        <action
+            android:id="@+id/action_eventViewFragment_to_authEnableFragment"
+            app:destination="@id/authEnableFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/jobFeedFragment"
+        android:name="ru.netology.nmedia.ui.JobFeedFragment"
+        android:label="JobFeedFragment" >
+        <action
+            android:id="@+id/action_jobFeedFragment_to_eventFeedFragment"
+            app:destination="@id/eventFeedFragment" />
+        <action
+            android:id="@+id/action_jobFeedFragment_to_postFeedFragment"
+            app:destination="@id/postFeedFragment" />
+        <action
+            android:id="@+id/action_jobFeedFragment_to_jobEditFragment"
+            app:destination="@id/jobEditFragment" />
+        <action
+            android:id="@+id/action_jobFeedFragment_to_jobViewFragment"
+            app:destination="@id/jobViewFragment" />
+        <action
+            android:id="@+id/action_jobFeedFragment_to_authEnableFragment"
+            app:destination="@id/authEnableFragment" />
+        <action
+            android:id="@+id/action_jobFeedFragment_to_registrationFragment"
+            app:destination="@id/registrationFragment" />
+        <action
+            android:id="@+id/action_jobFeedFragment_to_authDisableFragment"
+            app:destination="@id/authDisableFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/jobEditFragment"
+        android:name="ru.netology.nmedia.ui.JobEditFragment"
+        android:label="JobEditFragment" >
+        <action
+            android:id="@+id/action_jobEditFragment_to_jobFeedFragment"
+            app:destination="@id/jobFeedFragment" />
+        <action
+            android:id="@+id/action_jobEditFragment_to_authEnableFragment"
+            app:destination="@id/authEnableFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/jobViewFragment"
+        android:name="ru.netology.nmedia.ui.JobViewFragment"
+        android:label="JobViewFragment" >
+        <action
+            android:id="@+id/action_jobViewFragment_to_jobFeedFragment"
+            app:destination="@id/jobFeedFragment" />
+        <action
+            android:id="@+id/action_jobViewFragment_to_authEnableFragment"
+            app:destination="@id/authEnableFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/userFeedFragment"
+        android:name="ru.netology.nmedia.ui.UserFeedFragment"
+        android:label="UserFeedFragment" />
 </navigation>

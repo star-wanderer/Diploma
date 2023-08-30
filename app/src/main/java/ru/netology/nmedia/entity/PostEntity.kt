@@ -2,7 +2,6 @@ package ru.netology.nmedia.entity
 
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Coordinates
 import ru.netology.nmedia.dto.Post
@@ -75,5 +74,5 @@ data class PostEntity(
 }
 
 fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto)
-fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)
-fun List<Post>.toEntityInitial(): List<PostEntity> = map(PostEntity::fromDtoInitial)
+fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity.Companion::fromDto)
+fun List<Post>.toEntityInitial(): List<PostEntity> = map(PostEntity.Companion::fromDtoInitial)

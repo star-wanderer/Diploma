@@ -1,6 +1,5 @@
 package ru.netology.nmedia.ui
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.Button
@@ -22,6 +21,8 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.*
 import ru.netology.nmedia.databinding.FragmentEventFeedBinding
 import ru.netology.nmedia.dto.Event
+import ru.netology.nmedia.ui.EventEditFragment.Companion.ARG_EDIT_EVENT_ID
+import ru.netology.nmedia.ui.EventViewFragment.Companion.ARG_VIEW_EVENT_ID
 import ru.netology.nmedia.viewmodel.AppAuthViewModel
 import ru.netology.nmedia.viewmodel.EventViewModel
 
@@ -29,7 +30,7 @@ import ru.netology.nmedia.viewmodel.EventViewModel
 @ExperimentalCoroutinesApi
 class EventFeedFragment : Fragment() {
 
-    private val viewModel: EventViewModel by activityViewModels()
+    private val eventViewModel: EventViewModel by activityViewModels()
     private val authViewModel: AppAuthViewModel by viewModels()
 
     override fun onCreateView(
@@ -42,6 +43,7 @@ class EventFeedFragment : Fragment() {
             findViewById<LinearLayout>(R.id.contentMenu).isGone = false
             findViewById<Button>(R.id.posts).isEnabled = true
             findViewById<Button>(R.id.events).isEnabled = false
+            findViewById<Button>(R.id.jobs).isEnabled = true
         }
 
         val binding = FragmentEventFeedBinding.inflate(
@@ -49,36 +51,63 @@ class EventFeedFragment : Fragment() {
             container,
             false)
 
-        val adapter = FeedAdapter(null, object : OnEventInteractionListener {
+        val adapter = FeedAdapter(eventViewModel,
+            viewLifecycleOwner,
+            null,
+            object : OnEventInteractionListener {
+
+            override fun onContent(event: Event) {
+                findNavController().navigate(
+                    R.id.action_eventFeedFragment_to_eventViewFragment,
+                    Bundle().apply {
+                        ARG_VIEW_EVENT_ID = event.id.toString()
+                    }
+                )
+            }
+
+            override fun onAudioAttachment(event: Event) {
+               eventViewModel.useAudioAttachment(event)
+            }
 
             override fun onEdit(event: Event) {
-                viewModel.edit(event)
+                findNavController().navigate(
+                    R.id.action_eventFeedFragment_to_eventEditFragment,
+                    Bundle().apply {
+                        ARG_EDIT_EVENT_ID = event.id.toString()
+                    }
+                )
             }
 
             override fun onLike(event: Event) {
                 if (!authViewModel.isAuthorized) {
-                    findNavController().navigate(R.id.action_feedFragment_to_authenticationFragment)
+                    findNavController().navigate(R.id.action_eventFeedFragment_to_authEnableFragment)
                 } else {
-                    viewModel.likeById(event.id)
+                    if (event.likedByMe){
+                        eventViewModel.disLikeById(event.id)
+                    }
+                    else {
+                        eventViewModel.likeById(event.id)
+                    }
+                }
+            }
+
+            override fun onCheckInOut(event: Event) {
+                if (!authViewModel.isAuthorized) {
+              findNavController().navigate(R.id.action_eventFeedFragment_to_authEnableFragment)
+                } else {
+                    if (event.participatedByMe){
+                        eventViewModel.checkOutById(event.id)
+                    }
+                    else {
+                        eventViewModel.checkInById(event.id)
+                }
                 }
             }
 
             override fun onRemove(event: Event) {
-                viewModel.removeById(event.id)
+                eventViewModel.removeById(event.id)
             }
-
-            override fun onShare(event: Event) {
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, event.content)
-                    type = "text/plain"
-                }
-
-                val shareIntent =
-                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
-                startActivity(shareIntent)
-            }
-        })
+        }, null, null)
 
         var currentMenuProvider: MenuProvider? = null
 
@@ -96,20 +125,19 @@ class EventFeedFragment : Fragment() {
                     return when (menuItem.itemId) {
                         R.id.signIn -> {
                             findNavController().navigate(
-                                R.id.action_feedFragment_to_authenticationFragment
+                                R.id.action_eventFeedFragment_to_authEnableFragment
                             )
                             true
                         }
                         R.id.signUp -> {
                             findNavController().navigate(
-                            R.id.action_feedFragment_to_registrationFragment,
+                            R.id.action_eventFeedFragment_to_registrationFragment
                             )
                             true
                         }
                         R.id.signOut -> {
-                            println("Going to quit!")
                             findNavController().navigate(
-                                R.id.action_feedFragment_to_unAuthenticationFragment
+                                R.id.action_eventFeedFragment_to_authDisableFragment
                             )
                             true
                         }
@@ -132,7 +160,7 @@ class EventFeedFragment : Fragment() {
             }),
         )
 
-        viewModel.dataState.observe(viewLifecycleOwner) { state ->
+        eventViewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             binding.swipeRefresh.isRefreshing = state.refreshing
             if (state.error) {
@@ -143,7 +171,7 @@ class EventFeedFragment : Fragment() {
         }
 
         lifecycleScope.launchWhenCreated {
-            viewModel.data.collectLatest {
+            eventViewModel.data.collectLatest {
                 adapter.submitData(it)
             }
         }
@@ -161,9 +189,12 @@ class EventFeedFragment : Fragment() {
 
         binding.fab.setOnClickListener {
             if (!authViewModel.isAuthorized) {
-                findNavController().navigate(R.id.action_feedFragment_to_authenticationFragment)
+                findNavController().navigate(R.id.action_eventFeedFragment_to_authEnableFragment)
             } else {
-                findNavController().navigate(R.id.action_feedFragment_to_editPostFragment)
+                findNavController().navigate(R.id.action_eventFeedFragment_to_eventEditFragment)
+                Bundle().apply {
+                    ARG_EDIT_EVENT_ID = null
+                }
             }
         }
         return binding.root

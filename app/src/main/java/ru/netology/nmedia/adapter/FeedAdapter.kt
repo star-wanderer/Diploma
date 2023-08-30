@@ -1,59 +1,85 @@
 package ru.netology.nmedia.adapter
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.MediaController
 import android.widget.PopupMenu
+import android.widget.VideoView
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import ru.netology.nmedia.BuildConfig
+import com.bumptech.glide.Glide
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.netology.nmedia.R
-import ru.netology.nmedia.databinding.CardEventBinding
-import ru.netology.nmedia.databinding.CardPostBinding
-import ru.netology.nmedia.databinding.TextSeparatorBinding
-import ru.netology.nmedia.dto.Event
-import ru.netology.nmedia.dto.FeedItem
-import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.dto.TextSeparator
+import ru.netology.nmedia.databinding.*
+import ru.netology.nmedia.dto.*
+import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.view.load
 import ru.netology.nmedia.view.loadCircleCrop
+import ru.netology.nmedia.viewmodel.EventViewModel
+import ru.netology.nmedia.viewmodel.PostViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 interface OnInteractionListener {
     fun onContent(post: Post) {}
+    fun onAudioAttachment(post: Post) {}
     fun onLike(post: Post) {}
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
-    fun onPostImage(post: Post) {}
 }
 
 interface OnEventInteractionListener {
+    fun onContent(event: Event) {}
+    fun onAudioAttachment(event: Event) {}
     fun onLike(event: Event) {}
+    fun onCheckInOut(event: Event) {}
     fun onEdit(event: Event) {}
     fun onRemove(event: Event) {}
-    fun onShare(event: Event) {}
-    fun onPostImage(event: Event) {}
 }
 
-class FeedAdapter(
+interface OnJobInteractionListener {
+    fun onName(job: Job) {}
+    fun onEdit(job: Job) {}
+    fun onRemove(job: Job) {}
+}
+
+interface OnUserInteractionListener {
+    fun onSelect(user: User) {}
+}
+
+class FeedAdapter (
+    private val viewModel: ViewModel,
+    private val viewLifecycleOwner: LifecycleOwner,
     private val onInteractionListener: OnInteractionListener?,
     private val onEventInteractionListener: OnEventInteractionListener?,
+    private val onJobInteractionListener: OnJobInteractionListener?,
+    private val onUserInteractionListener: OnUserInteractionListener?,
 ) : PagingDataAdapter<FeedItem, RecyclerView.ViewHolder>(PostDiffCallback()) {
     private val typeTextSeparator = 0
     private val typePost = 1
     private val typeEvent = 2
+    private val typeJob = 3
+    private val typeUser = 4
 
     override fun getItemViewType(position: Int): Int {
         return when(getItem(position)){
             is TextSeparator -> typeTextSeparator
             is Post -> typePost
             is Event -> typeEvent
-            null -> throw java.lang.IllegalArgumentException("unknown item type")
+            is Job -> typeJob
+            is User -> typeUser
+            null -> {
+                throw java.lang.IllegalArgumentException("unknown item type")
+            }
         }
     }
 
@@ -71,16 +97,27 @@ class FeedAdapter(
                 CardEventBinding.inflate(layoutInflater, parent, false),
                 onEventInteractionListener
             )
+
+            typeJob -> JobViewHolder(
+                CardJobBinding.inflate(layoutInflater, parent, false),
+                onJobInteractionListener
+            )
+            typeUser -> UserViewHolder(
+                CardUserBinding.inflate(layoutInflater, parent, false),
+                onUserInteractionListener
+            )
             else -> throw IllegalArgumentException("unknown view type: $viewType")
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val context = holder.itemView.context
         getItem(position)?.let{
             when (it){
-                is Post -> (holder as? PostViewHolder)?.bind(it, context)
-                is Event -> (holder as? EventViewHolder)?.bind(it)
+                is Post -> (holder as? PostViewHolder)?.bind(it, viewLifecycleOwner, viewModel as PostViewModel)
+                is Event -> (holder as? EventViewHolder)?.bind(it, viewLifecycleOwner, viewModel as EventViewModel)
+                is Job -> (holder as? JobViewHolder)?.bind(it)
+                is User -> (holder as? UserViewHolder)?.bind(it)
                 is TextSeparator -> (holder as? TextSeparatorViewHolder)?.bind(it)
             }
         }
@@ -103,22 +140,30 @@ class PostViewHolder(
     private val onInteractionListener: OnInteractionListener?,
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    private fun unBind(){
+    private fun resetViews(){
         binding.apply {
             userSlots.forEach {
                 (it as ImageView).setImageDrawable(null)
             }
             image.setImageDrawable(null)
+            audio.isVisible = false
+            audio.isChecked = false
+            video.isVisible = false
+            videoStub.isVisible = false
         }
     }
 
-    fun bind(post: Post, context: Context) {
+    @SuppressLint("SimpleDateFormat")
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun bind(post: Post, viewLifecycleOwner: LifecycleOwner, viewModel: PostViewModel) {
 
-        unBind()
+        resetViews()
 
         binding.apply {
-            author.text = post.author
-            published.text = post.published
+
+            viewModel.trackData.observe(viewLifecycleOwner){ track ->
+                audio.isChecked = (track.isPlaying && track.itemId == post.id)
+            }
 
             var userIndex = 0
             post.users?.forEach{ userFound ->
@@ -131,17 +176,33 @@ class PostViewHolder(
                     userIndex++
                 }
             }
+
             if (post.authorAvatar == null){
-                avatar.setImageURI(Uri.parse(Uri.parse(context.getString(R.string.android_resource) + R.drawable.ic_netology_original_48dp ).toString()))
+                avatar.setImageResource(R.drawable.ic_netology_original_48dp)
             } else {
                 post.authorAvatar.let { avatar.loadCircleCrop(it) }
             }
 
-            like.isChecked = post.likedByMe
+            published.text = AndroidUtils.dateFormatter1(post.published)
             content.text = post.content
-            post.attachment?.let { image.load(it.url) }
+            author.text = post.author
+            postId.text = post.id.toString()
 
             menu.isVisible = post.ownedByMe
+            like.isChecked = post.likedByMe
+
+            post.attachment?.let {
+                when (it.type) {
+                    AttachmentType.IMAGE -> image.load(it.url)
+                    AttachmentType.AUDIO -> audio.isVisible = true
+                    AttachmentType.VIDEO -> {
+                        videoStub.isVisible = true
+                        videoStub.setImageResource(R.drawable.ic_video_stub_200dp)
+                    }
+                    else -> {}
+                }
+            }
+
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
@@ -169,8 +230,29 @@ class PostViewHolder(
                 onInteractionListener?.onLike(post)
             }
 
-            image.setOnClickListener {
-                onInteractionListener?.onPostImage(post)
+            audio.setOnClickListener{
+                onInteractionListener?.onAudioAttachment(post)
+            }
+
+            videoStub.setOnClickListener{
+                videoStub.isVisible = false
+                video.performClick()
+            }
+
+            video.setOnClickListener{ view ->
+                video.isVisible = true
+                (view as VideoView).apply {
+                    setMediaController(MediaController(context))
+                    setVideoURI(
+                        Uri.parse(post.attachment?.url)
+                    )
+                    setOnPreparedListener{
+                        start()
+                    }
+                    setOnCompletionListener{
+                        stopPlayback()
+                    }
+                }
             }
         }
     }
@@ -181,16 +263,77 @@ class EventViewHolder(
     private val onInteractionListener: OnEventInteractionListener?,
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    fun bind(event: Event) {
+    private fun resetViews(){
         binding.apply {
-            author.text = event.author
-            published.text = event.published
-            content.text = event.content
-            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${event.authorAvatar}")
-            like.isChecked = event.likedByMe
-            event.attachment?.url?.let {
-                image.load("${BuildConfig.BASE_URL}/media/${it}")
+            userSlots.forEach {
+                (it as ImageView).setImageDrawable(null)
             }
+            image.setImageDrawable(null)
+            audio.isVisible = false
+            audio.isChecked = false
+            video.isVisible = false
+            videoStub.isVisible = false
+        }
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun bind(event: Event, viewLifecycleOwner: LifecycleOwner, viewModel: EventViewModel) {
+
+        resetViews()
+
+        binding.apply {
+
+            viewModel.trackData.observe(viewLifecycleOwner){ track ->
+                audio.isChecked = (track.isPlaying && track.itemId == event.id)
+            }
+
+            var userIndex = 0
+            event.speakers?.forEach{ speakerId ->
+                if (userIndex >= userSlots.childCount) {
+                    return@forEach
+                } else {
+                    speakerId.value?.let { speakerAvatar ->
+                        (userSlots.getChildAt(userIndex) as ImageView).loadCircleCrop(speakerAvatar)
+                    }
+                    userIndex++
+                }
+            }
+
+            published.text = AndroidUtils.dateFormatter1(event.published)
+            eventDate.text = AndroidUtils.dateFormatter1(event.datetime)
+            author.text = event.author
+            title.text = event.content.substringBefore('§',"Event without Name")
+            content.text = event.content.substringAfter('§')
+
+            checkInOut.isChecked = event.participatedByMe
+            like.isChecked = event.likedByMe
+            menu.isVisible = event.ownedByMe
+
+            speakers.setImageResource(R.drawable.ic_speaker_20dp)
+
+            if (event.authorAvatar == null){
+                authorAvatar.setImageResource(R.drawable.ic_netology_original_48dp)
+                logo.setImageResource(R.drawable.ic_netology_original_48dp)
+            } else {
+                event.authorAvatar.let {
+                    authorAvatar.loadCircleCrop(it)
+                    logo.loadCircleCrop(it)
+                }
+            }
+
+            event.attachment?.let {
+                when (it.type) {
+                    AttachmentType.IMAGE -> image.load(it.url)
+                    AttachmentType.AUDIO -> audio.isVisible = true
+                    AttachmentType.VIDEO -> {
+                        videoStub.isVisible = true
+                        videoStub.setImageResource(R.drawable.ic_video_stub_200dp)
+                    }
+                    else -> {}
+                }
+            }
+
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
@@ -210,16 +353,125 @@ class EventViewHolder(
                 }.show()
             }
 
+            content.setOnClickListener{
+                onInteractionListener?.onContent(event)
+            }
+
             like.setOnClickListener {
                 onInteractionListener?.onLike(event)
             }
 
-            share.setOnClickListener {
-                onInteractionListener?.onShare(event)
+            checkInOut.setOnClickListener {
+                onInteractionListener?.onCheckInOut(event)
             }
 
-            image.setOnClickListener {
-                onInteractionListener?.onPostImage(event)
+            audio.setOnClickListener{
+                onInteractionListener?.onAudioAttachment(event)
+            }
+
+            videoStub.setOnClickListener{
+                videoStub.isVisible = false
+                video.performClick()
+            }
+
+            video.setOnClickListener{ view ->
+                video.isVisible = true
+                (view as VideoView).apply {
+                    setMediaController(MediaController(context))
+                    setVideoURI(
+                        Uri.parse(event.attachment?.url)
+                    )
+                    setOnPreparedListener{
+                        start()
+                    }
+                    setOnCompletionListener{
+                        stopPlayback()
+                    }
+                }
+            }
+        }
+    }
+}
+
+class JobViewHolder(
+    private val binding: CardJobBinding,
+    private val onInteractionListener: OnJobInteractionListener?,
+) : RecyclerView.ViewHolder(binding.root) {
+
+    private fun resetViews(){
+        binding.apply {
+        }
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    fun bind(job: Job) {
+
+        resetViews()
+
+        binding.apply {
+
+            val parser =  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",Locale.ENGLISH)
+            val formatter = SimpleDateFormat("dd.MM.yyyy")
+
+            name.text = job.name
+            link.text = job.link
+            position.text = job.position
+            start.text = parser.parse(job.start)?.let { formatter.format(it) }
+            finish.text = parser.parse(job.finish)?.let { formatter.format(it) }
+
+            avatar.setImageResource(R.drawable.ic_work_24dp)
+
+            menu.isVisible = true
+
+            menu.setOnClickListener {
+                PopupMenu(it.context, it).apply {
+                    inflate(R.menu.options_post)
+                    setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.remove -> {
+                                onInteractionListener?.onRemove(job)
+                                true
+                            }
+                            R.id.edit -> {
+                                onInteractionListener?.onEdit(job)
+                                true
+                            }
+                            else -> false
+                        }
+                    }
+                }.show()
+            }
+
+            name.setOnClickListener{
+            }
+
+            position.setOnClickListener{
+            }
+        }
+    }
+}
+
+class UserViewHolder(
+    private val binding: CardUserBinding,
+    private val onInteractionListener: OnUserInteractionListener?,
+) : RecyclerView.ViewHolder(binding.root) {
+
+    private fun resetViews(){
+        binding.apply {
+        }
+    }
+
+    fun bind(user: User) {
+
+        resetViews()
+
+        binding.apply {
+
+            name.text = user.name
+            avatar.setImageResource(R.drawable.ic_work_24dp)
+
+            selected.setOnClickListener{
+                onInteractionListener?.onSelect(user)
             }
         }
     }

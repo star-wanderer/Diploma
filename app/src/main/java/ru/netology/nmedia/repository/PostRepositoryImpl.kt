@@ -13,6 +13,9 @@ import ru.netology.nmedia.dao.PostRemoteKeyDao
 import ru.netology.nmedia.dao.PostUserDao
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.*
+import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.entity.toEntityInitial
 import ru.netology.nmedia.entity.*
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
@@ -28,22 +31,23 @@ import javax.inject.Singleton
 class PostRepositoryImpl @Inject constructor(
     val db: AppDb,
     private val postDao: PostDao,
-    private val userDao: PostUserDao,
-    val postRemoteKeyDao: PostRemoteKeyDao,
+    private val postUserDao: PostUserDao,
+    private val postRemoteKeyDao: PostRemoteKeyDao,
     private val apiService: ApiService,
 ) : PostRepository {
 
-    private val pageSize = 3
+    private val pageSize = 5
 
     @OptIn(ExperimentalPagingApi::class)
     override val data: Flow<PagingData<FeedItem>> = Pager(
         config = PagingConfig(pageSize),
-        remoteMediator = PostRemoteMediator(apiService,db,postDao,userDao,postRemoteKeyDao),
+        remoteMediator = PostRemoteMediator(apiService,db,postDao,postUserDao,postRemoteKeyDao),
         pagingSourceFactory = postDao::pagingSource,
     ).flow.map { pagingData->
-        pagingData.map(PostEntity::toDto).map { post ->
+        pagingData.map(PostEntity::toDto)
+            .map { post ->
             val myMap = mutableMapOf<String,UserPreview>()
-            userDao.getById(post.id).forEach{ postUser ->
+            postUserDao.getById(post.id).forEach{ postUser ->
                 myMap[postUser.userId] = UserPreview(postUser.name,postUser.avatar)
             }
             post.copy(users = myMap)
@@ -67,7 +71,7 @@ class PostRepositoryImpl @Inject constructor(
             } else {
                 postDao.insert(body.toEntity())
             }
-            userDao.insert(body.toUserEntity())
+            postUserDao.insert(body.toUserEntity())
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -97,7 +101,7 @@ class PostRepositoryImpl @Inject constructor(
                 post.copy(
                     attachment = Attachment(
                         url = media.url,
-                        type = AttachmentType.IMAGE
+                        type = post.attachment?.type
                     )
                 )
             )
@@ -121,29 +125,6 @@ class PostRepositoryImpl @Inject constructor(
                 file.asRequestBody()
             )
         ).let { requireNotNull(it.body()) }
-    }
-
-    override fun getNewerCount(id: Long): Flow<Int> = flow {
-        while (true) {
-            delay(10_000L)
-            val response = apiService.getNewer(id + postDao.getIsNewCount())
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity())
-            emit(postDao.getIsNewCount())
-        }
-    }
-        .catch { e -> throw AppError.from(e) }
-        .flowOn(Dispatchers.Default)
-
-    override suspend fun update() {
-        postDao.update()
-    }
-
-    override suspend fun getById(id: Long) : Post {
-        return postDao.getById(id).let(PostEntity::toDto)
     }
 
     override suspend fun removeById(id: Long) {
@@ -185,5 +166,32 @@ class PostRepositoryImpl @Inject constructor(
             throw UnknownError
         }
     }
+
+    override suspend fun getById(id: Long) : Post {
+            val myMap = mutableMapOf<String,UserPreview>()
+            postUserDao.getById(id).forEach { postUser ->
+                myMap[postUser.userId] = UserPreview(postUser.name, postUser.avatar)
+            }
+        return postDao.getById(id).let(PostEntity::toDto).copy(users = myMap)
+    }
+
+//    override fun getNewerCount(id: Long): Flow<Int> = flow {
+//        while (true) {
+//            delay(10_000L)
+//            val response = apiService.getNewer(id + postDao.getIsNewCount())
+//            if (!response.isSuccessful) {
+//                throw ApiError(response.code(), response.message())
+//            }
+//            val body = response.body() ?: throw ApiError(response.code(), response.message())
+//            postDao.insert(body.toEntity())
+//            emit(postDao.getIsNewCount())
+//        }
+//    }
+//        .catch { e -> throw AppError.from(e) }
+//        .flowOn(Dispatchers.Default)
+//
+//    override suspend fun update() {
+//        postDao.update()
+//    }
 }
 

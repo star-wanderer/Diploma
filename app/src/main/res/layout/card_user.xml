@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/common_spacing">
+
+                <ImageView
+                    android:id="@+id/avatar"
+                    android:layout_width="@dimen/posts_avatar_size"
+                    android:layout_height="@dimen/posts_avatar_size"
+                    android:layout_marginBottom="@dimen/common_spacing"
+                    android:contentDescription="@string/description_user"
+                    app:layout_constraintBottom_toBottomOf="@id/footer"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/common_spacing"
+                    android:layout_marginEnd="@dimen/common_spacing"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textAlignment="center"
+                    app:layout_constraintTop_toTopOf="@id/avatar"
+                    app:layout_constraintBottom_toBottomOf="@id/avatar"
+                    app:layout_constraintEnd_toStartOf="@id/selected"
+                    app:layout_constraintStart_toEndOf="@id/avatar"
+                    tools:text="@sample/users.json/data/name"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/selected"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:contentDescription="@string/description_user_selected"
+                    app:icon="@drawable/ic_check_control_24dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/avatar"
+                    app:layout_constraintBottom_toBottomOf="@id/avatar"
+                    tools:checked="@sample/users.json/data/selected"
+                    style="@style/Widget.AppTheme.IconButton"/>
+
+                <androidx.constraintlayout.widget.Barrier
+                    android:id="@+id/footer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:barrierDirection="bottom"
+                    app:constraint_referenced_ids="avatar,selected"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

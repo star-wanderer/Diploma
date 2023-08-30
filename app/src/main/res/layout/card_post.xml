@@ -92,12 +92,53 @@
                     app:layout_constraintTop_toBottomOf="@id/content"
                     tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/audio"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:checkable="true"
+                    android:visibility="gone"
+                    android:contentDescription="@string/description_play_audio"
+                    app:iconTint="@color/colorCustomBlue"
+                    app:icon="@drawable/ic_audio_control"
+                    app:iconGravity="top"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/image"
+                    tools:checked="@sample/posts.json/data/hasAudioAttachment"
+                    style="@style/Widget.AppTheme.LikeCheckBox"/>
+
+                <FrameLayout
+                    android:id="@+id/videoFrame"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/audio" >
+
+                        <VideoView
+                            android:id="@+id/video"
+                            android:layout_width="match_parent"
+                            android:visibility="gone"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_height="@dimen/video_height"
+                            android:contentDescription="@string/description_play_video"
+                            app:layout_constraintStart_toStartOf="parent" />
+
+                        <ImageView
+                            android:id="@+id/videoStub"
+                            android:layout_width="match_parent"
+                            android:layout_gravity="center_horizontal"
+                            android:visibility="gone"
+                            android:layout_height="@dimen/video_height"/>
+
+                </FrameLayout>
+
                 <androidx.constraintlayout.widget.Barrier
                     android:id="@+id/footer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:barrierDirection="bottom"
-                    app:constraint_referenced_ids="image"/>
+                    app:constraint_referenced_ids="videoFrame"/>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/reactZone"
@@ -113,7 +154,7 @@
                             android:layout_height="wrap_content"
                             android:checkable="true"
                             android:contentDescription="@string/description_post_like"
-                            app:icon="@drawable/ic_like_24dp"
+                            app:icon="@drawable/ic_like_control_24dp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="@id/reactZone"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -133,60 +174,108 @@
                                     android:layout_height="@dimen/posts_avatar_size"
                                     android:layout_marginBottom="@dimen/common_spacing"
                                     android:contentDescription="@string/description_post_author_avatar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintStart_toEndOf="parent"
                                     app:layout_constraintTop_toTopOf="@id/like"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+                                    tools:srcCompat="@sample/posts.json/data/authorAvatar" />
 
                                 <ImageView
                                     android:id="@+id/user2"
                                     android:layout_width="@dimen/posts_avatar_size"
                                     android:layout_height="@dimen/posts_avatar_size"
                                     android:layout_marginBottom="@dimen/common_spacing"
+                                    android:layout_marginStart="@dimen/common_spacing_negative"
                                     android:contentDescription="@string/description_post_author_avatar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintStart_toEndOf="@id/user1"
                                     app:layout_constraintTop_toTopOf="parent"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+                                    tools:srcCompat="@sample/posts.json/data/authorAvatar" />
 
                                 <ImageView
                                     android:id="@+id/user3"
                                     android:layout_width="@dimen/posts_avatar_size"
                                     android:layout_height="@dimen/posts_avatar_size"
                                     android:layout_marginBottom="@dimen/common_spacing"
+                                    android:layout_marginStart="@dimen/common_spacing_negative"
                                     android:contentDescription="@string/description_post_author_avatar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintStart_toEndOf="@id/user2"
                                     app:layout_constraintTop_toTopOf="@id/like"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+                                    tools:srcCompat="@sample/posts.json/data/authorAvatar" />
 
                                 <ImageView
                                     android:id="@+id/user4"
                                     android:layout_width="@dimen/posts_avatar_size"
                                     android:layout_height="@dimen/posts_avatar_size"
                                     android:layout_marginBottom="@dimen/common_spacing"
+                                    android:layout_marginStart="@dimen/common_spacing_negative"
                                     android:contentDescription="@string/description_post_author_avatar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintStart_toEndOf="@id/user3"
                                     app:layout_constraintTop_toTopOf="@id/like"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+                                    tools:srcCompat="@sample/posts.json/data/authorAvatar" />
 
                                 <ImageView
                                     android:id="@+id/user5"
                                     android:layout_width="@dimen/posts_avatar_size"
                                     android:layout_height="@dimen/posts_avatar_size"
                                     android:layout_marginBottom="@dimen/common_spacing"
+                                    android:layout_marginStart="@dimen/common_spacing_negative"
                                     android:contentDescription="@string/description_post_author_avatar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintStart_toEndOf="@id/user4"
                                     app:layout_constraintTop_toTopOf="@id/like"
+                                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+
+                                <ImageView
+                                    android:id="@+id/user6"
+                                    android:layout_width="@dimen/posts_avatar_size"
+                                    android:layout_height="@dimen/posts_avatar_size"
+                                    android:layout_marginBottom="@dimen/common_spacing"
+                                    android:layout_marginStart="@dimen/common_spacing_negative"
+                                    android:contentDescription="@string/description_post_author_avatar"
                                     app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/user5"
+                                    app:layout_constraintTop_toTopOf="@id/like"
+                                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+
+                                <ImageView
+                                    android:id="@+id/user7"
+                                    android:layout_width="@dimen/posts_avatar_size"
+                                    android:layout_height="@dimen/posts_avatar_size"
+                                    android:layout_marginBottom="@dimen/common_spacing"
+                                    android:layout_marginStart="@dimen/common_spacing_negative"
+                                    android:contentDescription="@string/description_post_author_avatar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/user6"
+                                    app:layout_constraintTop_toTopOf="@id/like"
+                                    tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
+
+                                <ImageView
+                                    android:id="@+id/user8"
+                                    android:layout_width="@dimen/posts_avatar_size"
+                                    android:layout_height="@dimen/posts_avatar_size"
+                                    android:layout_marginBottom="@dimen/common_spacing"
+                                    android:layout_marginStart="@dimen/common_spacing_negative"
+                                    android:contentDescription="@string/description_post_author_avatar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/user7"
+                                    app:layout_constraintTop_toTopOf="@id/like"
                                     tools:srcCompat="@sample/posts.json/data/authorAvatar"/>
 
                         </androidx.appcompat.widget.LinearLayoutCompat>
 
-
+                        <TextView
+                            android:id="@+id/post_id"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintEnd_toEndOf="@id/reactZone"
+                            app:layout_constraintStart_toEndOf="@id/userSlots"
+                            app:layout_constraintTop_toTopOf="@id/reactZone"
+                            app:layout_constraintBottom_toBottomOf="@id/reactZone" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
 </com.google.android.material.card.MaterialCardView>

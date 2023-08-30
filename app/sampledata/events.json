@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "eventTitle": "Пикник у блока питания",
+      "author": "Некробайт",
+      "authorAvatar": "@sample/posts_avatars",
+      "published": "14 августа в 8:15",
+      "eventContent": "   Сизый дым канифоли рассеялся и взору предстал изможденный блок питания, окутанный ворохом проводов...",
+      "likedByMe": true,
+      "hasAudioAttachment": false,
+      "hasVideoAttachment": true,
+      "likes": 100
+    }
+  ]
+}
+

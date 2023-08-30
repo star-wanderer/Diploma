@@ -49,6 +49,7 @@ android {
 }
 
 dependencies {
+//    def pickerVersion = "1.0.0" //look-up the latest one on jitpack
     def imagepicker_version = "2.1"
     def core_version = "1.10.0"
     def appcompat_version = "1.6.1"
@@ -73,6 +74,14 @@ dependencies {
     def play_services_base_version = "18.2.0"
     def paging_version = "3.1.1"
     def hilt_version = "2.46.1"
+    def LATEST_VERSION = "0.2.2"
+
+
+    implementation "com.github.majidarabi:AndroidFilePicker:$LATEST_VERSION"
+//    //the core package is a must
+//    implementation "com.github.FunkyMuse.MediaPicker:core:$pickerVersion"
+//    //audios
+//    implementation "com.github.FunkyMuse.MediaPicker:audiopicker:$pickerVersion"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutines_version"
     implementation "com.github.dhaval2404:imagepicker:$imagepicker_version"
